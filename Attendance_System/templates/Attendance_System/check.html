@@ -1,0 +1,46 @@
+{% extends 'Attendance_System/base.html' %}
+
+{% block body %}
+    <div class="row">
+    <div class="col-6">
+        <div class="for-alignment" style=" margin-left: 200px;">
+        <form method="POST" action="{% url 'check_attendance' %}">
+               {% csrf_token %}
+              <input type="hidden" name="name" value="{{ user.name }}">
+              <h3>Check your Attendance</h3>
+              <label>Select date from</label>
+              <br>
+              <input type="date" value="{{ today_date }}" name="start_date">
+              <br>
+              <br>
+              <label>Select date to</label>
+              <br>
+              <input type="date" value="{{ today_date }}" name="end_date">
+              <br>
+              <span class="text-danger small">{{ error }}</span>
+              <br>
+             <!--<button type="submit" class="btn btn-primary" data-toggle="modal" data-target="#myModal">
+                  Check Attendance
+              </button>-->
+               <button type="submit" class="btn btn-primary">Check</button>
+          </form>
+            </div>
+    </div>
+    <div class="col-6">
+        <div class="for-alignment" style="margin-top: 60px;margin-left: 100px;">
+               <table border="1px" style=" width: 70%; ">
+            <tr style="background-color: #04AA6D;color: white">
+                {% if time is not None %}
+                    <th>{{ time }}</th>
+                {% endif %}
+            </tr>
+                    {% for data in result %}
+                        <tr>
+                    <td>{{ data.time }}</td>
+                        </tr>
+                    {% endfor %}
+                </table>
+        </div>
+    </div>
+    </div>
+{% endblock %}

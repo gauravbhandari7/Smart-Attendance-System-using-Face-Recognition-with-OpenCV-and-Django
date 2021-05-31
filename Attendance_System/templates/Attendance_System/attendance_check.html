@@ -1,0 +1,54 @@
+{% extends 'Attendance_System/admin_base.html' %}
+
+{% block body %}
+    <div class="row">
+    <div class="col-6">
+        <div class="for-alignment" style=" margin-left: 200px;">
+            <form method="POST" action="{% url 'attendance_check' %}">
+           {% csrf_token %}
+          <h3>Check Attendance</h3>
+            <br>
+          <select name="selected_user">
+            <option value="all">All</option>
+            <br>
+            {% for record in user %}
+            <option value="{{ record.name }}">{{ record.name }}</option>
+            {% endfor %}
+          </select>
+          <br>
+            <br>
+          <label>Select date from</label>
+          <br>
+          <input type="date" value="{{ today_date }}" name="start_date">
+          <br>
+          <br>
+          <label>Select date to</label>
+          <br>
+          <input type="date" value="{{ today_date }}" name="end_date">
+            <br>
+          <span class="text-danger small">{{ error }}</span>
+            <br>
+           <button type="submit" class="btn btn-primary">Check</button>
+          </form>
+        </div>
+    </div>
+    <div class="col-6">
+        <div class="for-alignment" style="margin-top: 60px;margin-left: 100px;">
+       <table border="1px" style=" width: 70%; ">
+            <tr style="background-color: #04AA6D;color: white">
+                {% if name or time is not None %}
+                    <th>{{ name }}</th>
+                    <th>{{ time }}</th>
+                {% endif %}
+            </tr>
+            {% for data in result %}
+                <tr>
+            <td>{{ data.user.name }}</td>
+            <td>{{ data.time }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+        </div>
+    </div>
+    </div>
+{% endblock %}

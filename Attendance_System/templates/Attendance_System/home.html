@@ -1,0 +1,23 @@
+{% extends 'Attendance_System/base.html' %}
+
+{% block body %}
+    <div class="container">
+    <div class="row">
+        <div class="col-4">
+            <div class="for-alignment" style=" margin-left: 200px; ">
+            <h3>User Profile</h3>
+        <img src="{{ user.image.url }}" style="height: 250px;width: 200px;">
+                </div>
+        </div>
+        <div class="col-6">
+            <div class="for-alignment" style="margin-top: 60px;margin-left: 100px;">
+        <h4>Name : {{ user.name }}</h4>
+        <h4>Batch : {{ user.batch }}</h4>
+        <h4>Department : {{ user.department }}</h4>
+        <h4>Semester : {{ user.semester }}</h4>
+        <h4>Username : {{ user.username }}</h4>
+                </div>
+            </div>
+    </div>
+    </div>
+{% endblock %}
