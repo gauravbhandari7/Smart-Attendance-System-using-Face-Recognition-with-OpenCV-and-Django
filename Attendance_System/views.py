@@ -2,19 +2,22 @@ import os
 import cv2
 import numpy as np
 import face_recognition
-from datetime import datetime, timedelta, date
+from datetime import datetime,  date
 import pyttsx3
 from Face_Recognition.settings import BASE_DIR
 from django.shortcuts import render
-from Attendance_System.models import UserInfo, Records
+from Attendance_System.models import *
 from django.contrib.auth import authenticate, logout, login
 
-today = date.today()
-today_date = today.strftime("%Y-%m-%d")
+date_today = date.today()
+today_date = date_today.strftime("%Y-%m-%d")
 
 
 def index(request):
-    return render(request, 'Attendance_System/index.html')
+    if request.user.is_authenticated:
+        return render(request, 'Attendance_System/admin_home.html')
+    else:
+        return render(request, 'Attendance_System/index.html')
 
 
 def logout_user(request):
@@ -48,6 +51,11 @@ def attendance_check(request):
         return render(request, 'Attendance_System/attendance_check.html', context)
 
 
+def profile(request):
+    user = UserInfo.objects.get(username=request.session['username'], password=request.session['password'])
+    return render(request, 'Attendance_System/profile.html', {'user': user})
+
+
 def home(request):
     if request.user.is_authenticated:
         return render(request, 'Attendance_System/admin_home.html')
@@ -61,7 +69,7 @@ def home(request):
         user_admin = authenticate(request, username=uname, password=password)
         if user_existence:
             user = UserInfo.objects.get(username=uname, password=password)
-            return render(request, 'Attendance_System/home.html', {'user': user})
+            return render(request, 'Attendance_System/user_home.html', {'user': user})
         elif user_admin is not None:
             login(request, user_admin)
             return render(request, 'Attendance_System/admin_home.html')
@@ -71,7 +79,7 @@ def home(request):
 
     else:
         user = UserInfo.objects.get(username=request.session['username'], password=request.session['password'])
-        return render(request, 'Attendance_System/home.html', {'user': user})
+        return render(request, 'Attendance_System/user_home.html', {'user': user})
 
 
 def check_attendance(request):
@@ -116,16 +124,56 @@ def findEncodings(images):
 
 
 def markAttendance(name):
+    today = date.today()
     now = datetime.now()
-    now_minus_2_hour = now - timedelta(hours=2)
-    result1 = Records.objects.filter(user__name=name, time__range=(now, now_minus_2_hour))
-    if not result1:
-        user_object = UserInfo.objects.get(name=name)
-        record = Records(user=user_object, time=now)
-        record.save()
-        converter.say("Hello" + name + "Your attendance is recorded")
-        converter.runAndWait()
+    office_time = Office_Time.objects.get(pk=1)
+    
+    opening_time = datetime(today.year, today.month, today.day, office_time.opening_time.hour
+                                               , office_time.opening_time.minute, office_time.opening_time.second)
+    
+    opening_time_max = datetime(today.year, today.month, today.day,  office_time.opening_time_max.hour
+                                  , office_time.opening_time_max.minute, office_time.opening_time_max.second)
 
+    closing_time = datetime(today.year, today.month, today.day, office_time.closing_time.hour,
+                            office_time.closing_time.minute, office_time.closing_time.second)
+    
+    closing_time_max = datetime(today.year, today.month, today.day, office_time.closing_time_max.hour,
+                                  office_time.closing_time_max.minute, office_time.closing_time_max.second)
+
+
+    if now < opening_time_max and now > opening_time:
+
+        result1 = Records.objects.filter(user__name=name, time__range=(opening_time, opening_time_max))
+
+        if not result1:
+            user_object = UserInfo.objects.get(name=name)
+            record = Records(user=user_object, time=now)
+            record.save()
+            converter.say("Hello" + name + "Your attendance is recorded")
+            converter.runAndWait()
+
+        else:
+            converter.say("Hello" + name + "Your morning attendance is already recorded")
+            converter.runAndWait()
+
+    elif now > closing_time and now < closing_time_max:
+
+        result1 = Records.objects.filter(user__name=name,time__range=(closing_time, closing_time_max))
+
+        if not result1:
+            user_object = UserInfo.objects.get(name=name)
+            record = Records(user=user_object, time=now)
+            record.save()
+            converter.say("Hello" + name + "Your attendance is recorded")
+            converter.runAndWait()
+
+        else:
+            converter.say("Hello" + name + "Your evening attendance is already recorded")
+            converter.runAndWait()
+
+    else:
+        converter.say("Hello" + name + "This is not the proper time")
+        converter.runAndWait()
 
 def webcam(request):
     encodeListKnown = findEncodings(images)

@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='records',
             name='time',
-            field=models.DateTimeField(default=0),
+            field=models.DateTimeField(null=True),
             preserve_default=False,
         ),
     ]
